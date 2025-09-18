@@ -1,5 +1,5 @@
 self.__uv$config = {
-	prefix: "/evo/",
+	prefix: "/uv/evo/",
 	bare: "https://v4.mathsjunction.in/tspmo/",
 	encodeUrl: Ultraviolet.codec.xor.encode,
 	decodeUrl: Ultraviolet.codec.xor.decode,
