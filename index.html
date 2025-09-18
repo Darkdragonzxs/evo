@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Evo — Sky Search</title>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body,html{height:100%;font-family:'Fredoka One',sans-serif;overflow:hidden;
+    background:url('https://static.vecteezy.com/system/resources/previews/007/384/234/non_2x/blue-sky-background-and-white-clouds-vector.jpg') no-repeat center/cover;}
+
+  /* Tabs */
+  .tabs-bar{position:fixed;top:0;left:0;width:100%;height:50px;
+    background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);
+    display:flex;align-items:center;padding:0 8px;z-index:20;}
+  #tabsContainer{display:flex;align-items:center;flex-shrink:1}
+  .tab{padding:8px 14px;background:rgba(255,255,255,0.25);border-radius:10px;
+    color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;margin-right:6px;
+    transition:.2s;box-shadow:0 3px 6px rgba(0,0,0,.2);}
+  .tab.active{background:rgba(255,255,255,0.45)}
+  .tab img{width:16px;height:16px}
+  .close-tab{background:none;border:none;color:#fff;cursor:pointer;font-size:13px;margin-left:6px}
+  .close-tab:hover{color:#ff4444}
+  #newTabBtn{width:34px;height:34px;background:rgba(255,255,255,0.3);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+  #newTabBtn i{color:#fff;font-size:18px}
+
+  /* Top bar */
+  .top-bar{position:fixed;top:50px;width:100%;height:60px;display:flex;align-items:center;padding:8px 12px;
+    background:linear-gradient(135deg,rgba(255,255,255,.25),rgba(255,255,255,.15));
+    backdrop-filter:blur(20px) saturate(200%);border-radius:12px;
+    border:1px solid rgba(255,255,255,.3);box-shadow:0 6px 18px rgba(0,0,0,.3);z-index:15;}
+  .top-bar::before{content:"";position:absolute;top:0;left:0;width:100%;height:50%;
+    background:linear-gradient(to bottom,rgba(255,255,255,.4),transparent)}
+  .top-bar button{margin-right:6px;padding:6px 10px;border-radius:16px;border:none;
+    background:rgba(255,255,255,.3);color:#fff;cursor:pointer}
+  .top-bar button:hover{background:rgba(255,255,255,.45)}
+  .top-bar input{flex:1;height:38px;border-radius:18px;padding:0 14px;border:none;outline:none;
+    background:rgba(255,255,255,.25);color:#fff;font-size:14px}
+
+  iframe{position:absolute;top:110px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 110px);border:none}
+</style>
+</head>
+<body>
+
+<div class="tabs-bar">
+  <div id="tabsContainer"></div>
+  <div id="newTabBtn" title="New Tab"><i class="fas fa-plus"></i></div>
+</div>
+
+<div class="top-bar">
+  <button id="backBtn"><i class="fas fa-chevron-left"></i></button>
+  <button id="forwardBtn"><i class="fas fa-chevron-right"></i></button>
+  <button id="reloadBtn"><i class="fas fa-sync-alt"></i></button>
+  <input id="urlInput" type="text" placeholder="Enter URL..."/>
+  <button id="goBtn">Go</button>
+</div>
+
+<iframe id="mainFrame"></iframe>
+
+<script>
+let tabId=0;
+const tabsContainer=document.getElementById("tabsContainer");
+const mainFrame=document.getElementById("mainFrame");
+const urlInput=document.getElementById("urlInput");
+
+const NEWTAB_REAL_URL = "https://html.cafe/x4cb44c4b";
+const NEWTAB_DISPLAY_URL = "evo://newtab";
+const NEWTAB_ICON = "https://raw.githubusercontent.com/Darkdragonzxs/evo/refs/heads/main/assets/images/evo.png";
+
+function favicon(url){
+  if(url===NEWTAB_REAL_URL) return NEWTAB_ICON; // custom icon for new tab
+  try{ let u=new URL(url); return u.origin+"/favicon.ico"; }
+  catch{ return "https://www.google.com/s2/favicons?domain="+url }
+}
+
+function createTab(url,title){
+  tabId++;
+  const id="tab-"+tabId;
+  const tab=document.createElement("div");
+  tab.className="tab active"; tab.id=id;
+  tab.dataset.url=url;
+
+  // display text (special case for new tab)
+  let displayText = (url===NEWTAB_REAL_URL) ? NEWTAB_DISPLAY_URL : title;
+
+  tabsContainer.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  tab.innerHTML=`<img src="${favicon(url)}"><span>${displayText}</span>
+    <button class="close-tab"><i class="fas fa-times"></i></button>`;
+  tabsContainer.appendChild(tab);
+
+  openUrl(url);
+
+  tab.querySelector(".close-tab").onclick=(e)=>{
+    e.stopPropagation();
+    tab.remove();
+    if(tab.classList.contains("active")){
+      let last=tabsContainer.lastElementChild;
+      if(last) last.click();
+      else mainFrame.src="about:blank";
+    }
+  };
+
+  tab.onclick=()=>{
+    tabsContainer.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    openUrl(tab.dataset.url);
+  };
+}
+
+function openUrl(url){
+  mainFrame.src=url;
+
+  // show evo://newtab in input
+  if(url===NEWTAB_REAL_URL){
+    urlInput.value=NEWTAB_DISPLAY_URL;
+  } else {
+    urlInput.value=url;
+  }
+}
+
+document.getElementById("newTabBtn").onclick=()=>createTab(NEWTAB_REAL_URL,"New Tab");
+
+document.getElementById("goBtn").onclick=()=>{
+  let v=urlInput.value.trim();
+  if(v===NEWTAB_DISPLAY_URL){
+    createTab(NEWTAB_REAL_URL,"New Tab");
+    return;
+  }
+  if(v && !/^https?:\/\//.test(v)) v="https://"+v;
+  if(v) createTab(v,v);
+};
+
+urlInput.addEventListener("keypress",e=>{
+  if(e.key==="Enter") document.getElementById("goBtn").click();
+});
+
+backBtn.onclick=()=>{try{mainFrame.contentWindow.history.back()}catch{}};
+forwardBtn.onclick=()=>{try{mainFrame.contentWindow.history.forward()}catch{}};
+reloadBtn.onclick=()=>{try{mainFrame.contentWindow.location.reload()}catch{}};
+
+// startup: open new tab
+createTab(NEWTAB_REAL_URL,"New Tab");
+</script>
+</body>
+</html>
