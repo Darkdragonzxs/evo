@@ -1,6 +1,6 @@
 self.__uv$config = {
-	prefix: "/s/ultraviolet/",
-	bare: "https://meximathurbanned.global.ssl.fastly.net/tspmo/",
+	prefix: "/evo/",
+	bare: "https://v4.mathsjunction.in/tspmo/",
 	encodeUrl: Ultraviolet.codec.xor.encode,
 	decodeUrl: Ultraviolet.codec.xor.decode,
 	handler: "/s/uv/uv.handler.js",
